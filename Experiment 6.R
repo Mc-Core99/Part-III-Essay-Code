@@ -1,5 +1,5 @@
 #in this experiment we see what happens
-#when performing on some house data
+#when performing on some Titanic data
 
 
 
