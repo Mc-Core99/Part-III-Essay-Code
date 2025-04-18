@@ -9,7 +9,7 @@ library(Matrix)
 #used for some matrix manipulation
 library(BB)
 #used to perform the optimisation
-set.seed(4)
+set.seed(5)
 
 #generating random hyperplanes
 random.Hyperplanes <- function(number, X) {
@@ -152,17 +152,47 @@ true.objective.function <- function(width, X, y, lambda) {
 #note that y is chosen so that parameters should not be large,
 #so the lower and upper bounds do not effect the minimum
 true.minimum <- function(true.objective) {
-  true.solution <<- spg(par = rnorm(p*width + width, mean = 0, sd = 0.1), 
+  true.solution <<- spg(par = rnorm(p*width + width, mean = 0, sd = 0.01), 
                         fn = true.objective, 
-                        lower = -1000,
-                        upper = 1000,
+                        lower = -100000,
+                        upper = 100000,
                         control = list(M = 50, ftol = 1e-4, trace = TRUE))
 }
 
 
 #Load the housing Data
-House_Prices <- read_csv("HouseTrainingData.csv")
+Titanic <- read_csv("TitanicTrainingData.csv")
 
+Titanic <- na.omit(Titanic)
+y <- Titanic["Survived"]
+y <- y/norm(y, type = "2")
+names <- c("Pclass", "Age", "SibSp", "Parch", "Fare")
+X <- Titanic[names]
+X <- as.matrix(X)
+y <- as.matrix(y)
 
+width = 40
+number = 20
+lambda = 0.3
+n <- length(X[, 1])
+p <- length(X[1, ])
+
+random.Hyperplanes(number, X)
+relaxed.Objective(number, hyperplanes, X, y, lambda)
+relaxed.gradient(number, hyperplanes, X, y, lambda)
+constraints(hyperplanes, X)
+b1 = as.numeric(rep(0, length(AMat[, 1])))
+relaxed.minimum(AMat, relaxed.objective.function, b1, relaxed.objective.derivative)
+re.sol <- relaxed.solution$value
+
+true.objective.function(width, X, y, lambda)
+mini <- c()
+for (o in 1:4) {
+  true.minimum(true.objective)
+  mini[o] <- true.solution$value
+}
+true.sol <- min(mini)
+
+print(re.sol/true.sol)
 
 
